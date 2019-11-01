@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Make TODO great again!</title>
+    <script src="/tasks.js" rel="script"></script>
+    <link href="/tasks.css" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <h1>Glad to see you, bro</h1>
+    </div>
+    <div class="tasks">
+        <ul class="tasks-ul">
+            {{ range . }}
+            <li class="task">
+                <p class="task-text">{{ .Value }}</p>
+                <button class="task-view-button" onclick="viewTask({{ .Id }})">View</button>
+                <button class="task-remove-button" onclick="removeTask({{ .Id }})">Remove</button>
+            </li>
+            {{ else }}
+            <li class="task">
+                <p class="task-text">User haven't got tasks</p>
+            </li>
+            {{ end }}
+        </ul>
+        <form class="tasks-add-form" method="post" onsubmit="">
+            <p>Add task</p>
+            <input type="text" name="task_content">
+            <button class="task-add-button" type="submit" onclick="">Add</button>
+        </form>
+    </div>
+</body>
+</html>

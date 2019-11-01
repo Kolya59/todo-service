@@ -1,0 +1,61 @@
+body {
+    background-color: beige;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 20pt;
+}
+
+ul {
+    list-style: none;
+}
+
+ul > li {
+    display: flex;
+    margin: auto;
+}
+
+ul > li > button {
+    height: 50%;
+    margin: auto 5px;
+}
+
+.header {
+    width: 100%;
+}
+
+.header > h1 {
+    alignment: center;
+    background: linear-gradient(180deg, #f00000, #f00000 16.67%, #ff8000 16.67%, #ff8000 33.33%, #ffff00 33.33%, #ffff00 50%, #007940 50%, #007940 66.67%, #4040ff 66.67%, #4040ff 83.33%, #a000c0 83.33%, #a000c0) ;
+    display: block;
+    font-size: 30pt;
+    margin: 10%;
+    text-align: center;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tasks {
+    margin: auto;
+    width: 50%;
+}
+
+.task {
+    border: 1px solid gray;
+    background-color: aliceblue;
+    margin: auto;
+}
+
+.task > * {
+    margin: auto;
+}
+
+.tasks-add-form {
+    border: 1px solid gray;
+    background-color: aliceblue;
+    display: flex;
+}
+
+.tasks-add-form > * {
+    margin: auto;
+    width: auto;
+}

@@ -1,0 +1,21 @@
+TokenList:
+  description: OK
+  schema:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          $ref: "./def/token.yaml#/TokenValue"
+        description:
+          $ref: "./def/token.yaml#/TokenDescription"
+        createdAt:
+          type: number
+          description: UNIX timestamp (UTC)
+Token:
+  description: Token created successfully.
+  schema:
+    type: object
+    properties:
+      value:
+        $ref: "./def/token.yaml#/TokenValue"

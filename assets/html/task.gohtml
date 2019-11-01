@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Make TODO great again!</title>
+    <script src="/task.js" rel="script"></script>
+    <link href="/task.css" rel="stylesheet">
+</head>
+<body>
+    <div class="task-name">
+        <h1>Task ID is {{ .Id }}</h1>
+    </div>
+    <div class="task-value">
+        <p>{{ .Value }}</p>
+        <input type="checkbox" checked="{{ .IsResolved }}" onclick="changeStatus({{ .Id }})">
+    </div>
+    <div class="task-comments">
+        <ul class="ul-task-comments">
+            {{range .Comments}}
+            <li class="li-task-comments">
+                <p>{{ .Author }}</p>
+                <p>{{ .Value }}</p>
+            </li>
+            {{else}}
+            <li class="li-task-comments">
+                <p>This data haven't got comments</p>
+            </li>
+            {{end}}
+        </ul>
+    </div>
+</body>
+</html>
