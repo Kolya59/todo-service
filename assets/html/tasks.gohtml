@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Make TODO great again!</title>
-    <script src="/tasks.js" rel="script"></script>
+    <script src="http://code.jquery.com/jquery-git2.js"></script>
     <link href="/tasks.css" rel="stylesheet">
 </head>
 <body>
@@ -13,10 +13,10 @@
     <div class="tasks">
         <ul class="tasks-ul">
             {{ range . }}
-            <li class="task">
-                <p class="task-text">{{ .Value }}</p>
-                <button class="task-view-button" onclick="viewTask({{ .Id }})">View</button>
-                <button class="task-remove-button" onclick="removeTask({{ .Id }})">Remove</button>
+            <li class="task" id="task_{{ .UUID }}">
+                <p class="task-content">{{ .Value }}</p>
+                <button class="task-view-button">View</button>
+                <button class="task-remove-button">Remove</button>
             </li>
             {{ else }}
             <li class="task">
@@ -24,11 +24,13 @@
             </li>
             {{ end }}
         </ul>
-        <form class="tasks-add-form" method="post" onsubmit="">
+        <form id="tasks-add-form" class="tasks-add-form">
             <p>Add task</p>
             <input type="text" name="task_content">
-            <button class="task-add-button" type="submit" onclick="">Add</button>
+            <button class="task-add-button" type="submit">Add</button>
         </form>
     </div>
+
+    <script src="/tasks.js" rel="script"></script>
 </body>
 </html>

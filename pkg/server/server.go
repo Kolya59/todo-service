@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/psu/todo-service/proto"
 	"github.com/rs/zerolog/log"
@@ -31,9 +33,9 @@ func StartServer(host string, port string, profilerPort string) {
 	r.Post("/auth", Authorize)
 
 	r.Get("/tasks", GetAllTask)
+	r.Post("/tasks", InsertTask)
 
 	r.Get("/tasks/{id}", GetTask)
-	r.Post("/tasks/{id}", InsertTask)
 	r.Put("/task/{id}", UpdateTaskStatus)
 	r.Delete("/tasks/{id}", RemoveTask)
 
@@ -125,12 +127,12 @@ func StartServer(host string, port string, profilerPort string) {
 func GetAllTask(w http.ResponseWriter, r *http.Request) {
 	data := []proto.Task{
 		{
-			Id:       0,
+			UUID:     "0",
 			Value:    "Task 1",
 			Comments: nil,
 		},
 		{
-			Id:       1,
+			UUID:     "1",
 			Value:    "Task 2",
 			Comments: nil,
 		},
@@ -155,8 +157,9 @@ func GetAllTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
+	// TODO Get task form DB
 	data := proto.Task{
-		Id:         0,
+		UUID:       "0",
 		Value:      "Task 1",
 		IsResolved: true,
 		Comments:   nil,
@@ -181,21 +184,39 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertTask(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get(gitHubUrl + "/gists")
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to send get request")
-		w.WriteHeader(http.StatusInternalServerError)
+	// TODO Set task in DB
+	type request struct {
+		Token   string `json:"token"`
+		Content string `json:"content"`
 	}
-
-	switch resp.StatusCode {
-	case 200:
-		// Parse body
-		w.WriteHeader(http.StatusOK)
-		log.Debug().Msgf("Response is %v", resp)
-	case 422:
-		w.WriteHeader(http.StatusUnprocessableEntity)
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
+	var reqData []byte
+	_, err := r.Body.Read(reqData)
+	if err != nil {
+		w.WriteHeader(500)
+		_, _ = w.Write([]byte(fmt.Sprint("Failed to get request data")))
+	}
+	var req = &request{}
+	_ = json.Unmarshal(reqData, req)
+	if err != nil {
+		w.WriteHeader(500)
+		_, _ = w.Write([]byte(fmt.Sprint("Failed to get request data")))
+	}
+	// TODO Check token
+	w.WriteHeader(200)
+	res, err := json.Marshal(proto.Task{
+		UUID:       uuid.New().String(),
+		Value:      req.Content,
+		IsResolved: false,
+		Comments:   nil,
+	})
+	if err != nil {
+		w.WriteHeader(500)
+		_, _ = w.Write([]byte(fmt.Sprint("Failed to insert task")))
+	}
+	_, err = w.Write(res)
+	if err != nil {
+		w.WriteHeader(500)
+		_, _ = w.Write([]byte(fmt.Sprint("Failed to insert task")))
 	}
 }
 
