@@ -1,0 +1,8 @@
+{
+  "name": "todo-service",
+  "version": "1.0.0",
+  "dependencies": {},
+  "devDependencies": {
+    "uuid": "^3.3.3"
+  }
+}

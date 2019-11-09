@@ -11,12 +11,13 @@
     <div class="header">
         <h1>This is the best TODO that you have ever seen</h1>
     </div>
-    <form class="auth-form" onsubmit="authorize()">
+    <form class="auth-form" onsubmit="e => e.preventDefautl()">
         <p class="auth-form-login">Login</p>
-        <input class="auth-form-login-input" type="email" placeholder="MomSaysIAmSpecial@frontend.com">
+        <input class="auth-form-login-input" type="email" name="login" placeholder="MomSaysIAmSpecial@frontend.com">
         <p class="auth-form-password">Password</p>
-        <input class="auth-form-password-input" type="password" placeholder="Password">
-        <button class="auth-form-submit" type="submit">I am ready for best TODO service in the world</button>
+        <input class="auth-form-password-input" type="password" name="password" placeholder="NOT qwerty">
+        <button class="auth-form-sign-in" type="submit" onclick="signIn()">I know that this is the best TODO service in the world</button>
+        <button class="auth-form-sign-up" type="submit" onclick="signUp()">I am ready for the best TODO service in the world</button>
     </form>
 </body>
 </html>

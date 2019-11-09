@@ -25,7 +25,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     margin: auto;
-    width: 40%;
+    width: 60%;
 }
 
 .auth-form > * {
@@ -37,4 +37,16 @@ body {
 
 .auth-form > input {
     width: 90%;
+}
+
+.auth-form > button {
+    width: 45%;
+}
+
+.auth-form-sign-in {
+    background-color: azure;
+}
+
+.auth-form-sign-up {
+    background-color: beige;
 }

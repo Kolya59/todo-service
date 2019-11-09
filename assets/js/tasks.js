@@ -8,33 +8,6 @@ function createTaskContainer(id, content) {
             <button class="task-remove-button">Remove</button>
         </li>
     `);
-
-    /*// Set elements
-    let tasks_ul = document.getElementsByClassName('tasks-ul').item(0);
-
-    let task_li = document.createElement('li');
-    task_li.className = 'task';
-
-    let task_content = document.createElement('p');
-    task_content.className = 'task-content';
-    task_content.value = content;
-
-    let view_task_button = document.createElement('button');
-    view_task_button.className = 'task-view-button';
-    view_task_button.onclick = _ => viewTask(id);
-    view_task_button.value = id;
-
-    let remove_task_button = document.createElement('button');
-    remove_task_button.className = 'task-remove-button';
-    remove_task_button.onclick = _ => removeTask(id);
-    remove_task_button.value = id;
-
-
-    // Set relationships
-    task_li.appendChild(task_content);
-    task_li.appendChild(view_task_button);
-    task_li.appendChild(remove_task_button);
-    tasks_ul.appendChild(task_li);*/
 }
 
 function insertTask() {
