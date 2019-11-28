@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Make TODO great again!</title>
     <script src="http://code.jquery.com/jquery-git2.js"></script>
-    <script src="/task.js" rel="script"></script>
     <link href="/task.css" rel="stylesheet">
 </head>
 <body>
@@ -13,7 +12,7 @@
     </div>
     <div class="task-value">
         <p>{{ .Value }}</p>
-        <input type="checkbox" checked="{{ .IsResolved }}" onclick="changeStatus({{ .UUID }})">
+        <input id="{{ .UUID }}" class="is_resolved" type="checkbox" checked="{{ .IsResolved }}">
     </div>
     <div class="task-comments">
         <ul class="ul-task-comments">
@@ -29,5 +28,6 @@
             {{end}}
         </ul>
     </div>
+    <script src="/task.js" rel="script"></script>
 </body>
 </html>

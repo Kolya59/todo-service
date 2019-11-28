@@ -4,20 +4,21 @@
     <meta charset="UTF-8">
     <title>Make TODO great again!</title>
     <script src="http://code.jquery.com/jquery-git2.js"></script>
-    <script src="/auth.js" rel="script"></script>
     <link href="/auth.css" rel="stylesheet">
 </head>
 <body>
     <div class="header">
         <h1>This is the best TODO that you have ever seen</h1>
     </div>
-    <form class="auth-form" onsubmit="e => e.preventDefautl()">
-        <p class="auth-form-login">Login</p>
+    <form class="auth-form">
+        <p class="auth-form-login">Email</p>
         <input class="auth-form-login-input" type="email" name="login" placeholder="MomSaysIAmSpecial@frontend.com">
         <p class="auth-form-password">Password</p>
         <input class="auth-form-password-input" type="password" name="password" placeholder="NOT qwerty">
-        <button class="auth-form-sign-in" type="submit" onclick="signIn()">I know that this is the best TODO service in the world</button>
-        <button class="auth-form-sign-up" type="submit" onclick="signUp()">I am ready for the best TODO service in the world</button>
+        <input id="hidden" name="type" type="hidden">
+        <button class="auth-form-sign-in" type="button">I know that this is the best TODO service in the world</button>
+        <button class="auth-form-sign-up" type="button">I am ready for the best TODO service in the world</button>
     </form>
+    <script src="/auth.js" rel="script"></script>
 </body>
 </html>

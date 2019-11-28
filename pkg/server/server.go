@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/psu/todo-service/pkg/postgres"
 	"github.com/psu/todo-service/proto"
@@ -33,7 +34,7 @@ func StartServer(host string, port string, profilerPort string) {
 	r.Post("/tasks", InsertTask)
 
 	r.Get("/tasks/{id}", GetTask)
-	r.Put("/task/{id}", UpdateTaskStatus)
+	r.Put("/tasks/{id}", UpdateTaskStatus)
 	r.Delete("/tasks/{id}", RemoveTask)
 
 	// File routes
@@ -168,7 +169,6 @@ func GetAllTask(w http.ResponseWriter, r *http.Request) {
 func GetTask(w http.ResponseWriter, r *http.Request) {
 	type requestBody struct {
 		UserId string `json:"user_id"`
-		TaskId string `json:"task_id"`
 	}
 	request := requestBody{}
 	data, err := ioutil.ReadAll(r.Body)
@@ -183,20 +183,21 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	task, err := postgres.SelectTask(request.UserId, request.TaskId)
+	id := mux.Vars(r)["id"]
+	task, err := postgres.SelectTask(request.UserId, id)
 	files := []string{"./assets/html/task.gohtml"}
 	if len(files) > 0 {
 		name := path.Base(files[0])
 		tmpl, err := template.New(name).ParseFiles(files...)
 		if err != nil {
-			log.Panic().Err(err).Msg("Failed to prepare template")
+			log.Error().Err(err).Msg("Failed to prepare template")
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte(err.Error()))
 		}
 		w.WriteHeader(200)
 		err = tmpl.Execute(w, task)
 		if err != nil {
-			log.Panic().Err(err).Msg("Failed to execute template")
+			log.Error().Err(err).Msg("Failed to execute template")
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte(err.Error()))
 		}
@@ -241,7 +242,6 @@ func InsertTask(w http.ResponseWriter, r *http.Request) {
 func RemoveTask(w http.ResponseWriter, r *http.Request) {
 	type requestBody struct {
 		UserId string `json:"user_id"`
-		TaskId string `json:"task_id"`
 	}
 	request := requestBody{}
 	data, err := ioutil.ReadAll(r.Body)
@@ -256,9 +256,10 @@ func RemoveTask(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	err = postgres.DeleteTask(request.UserId, request.TaskId)
+	id := mux.Vars(r)["id"]
+	err = postgres.DeleteTask(request.UserId, id)
 	if err != nil {
-		log.Error().Err(err).Msgf("Failed to delete task %v", request.TaskId)
+		log.Error().Err(err).Msgf("Failed to delete task %v", id)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
