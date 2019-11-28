@@ -16,26 +16,31 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog/log"
+
 	"github.com/psu/todo-service/pkg/postgres"
 	"github.com/psu/todo-service/proto"
-	"github.com/rs/zerolog/log"
+)
+
+const (
+	cookieDuration = 30 * time.Minute
 )
 
 func StartServer(host string, port string, profilerPort string) {
 	// Create router
 	r := chi.NewRouter()
 	// Setup routes
-	r.Options("/", OptionsHandler)
+	r.Options("/", optionsHandler)
 
-	r.Post("/auth/signin", Authorize)
-	r.Post("/auth/signup", Register)
+	r.Post("/auth/signin", authorize)
+	r.Post("/auth/signup", register)
 
-	r.Get("/tasks", GetAllTask)
-	r.Post("/tasks", InsertTask)
+	r.Get("/tasks", getAllTask)
+	r.Post("/tasks", insertTask)
 
-	r.Get("/tasks/{id}", GetTask)
-	r.Put("/tasks/{id}", UpdateTaskStatus)
-	r.Delete("/tasks/{id}", RemoveTask)
+	r.Get("/tasks/{id}", getTask)
+	r.Put("/tasks/{id}", updateTaskStatus)
+	r.Delete("/tasks/{id}", removeTask)
 
 	// File routes
 	r.Get("/auth", func(w http.ResponseWriter, r *http.Request) {
@@ -122,24 +127,24 @@ func StartServer(host string, port string, profilerPort string) {
 	}
 }
 
-func GetAllTask(w http.ResponseWriter, r *http.Request) {
-	type request struct {
-		Id string `json:"id"`
-	}
-	userId := request{}
-	data, err := ioutil.ReadAll(r.Body)
+func auth(r *http.Request) (string, error) {
+	c, err := r.Cookie("id")
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to decode body")
-		w.WriteHeader(http.StatusInternalServerError)
+		return "", err
+	}
+	return c.Value, nil
+}
+
+func getAllTask(w http.ResponseWriter, r *http.Request) {
+	id, err := auth(r)
+	if err != nil || id == "" {
+		log.Info().Err(err).Msg("Failed to authorize user")
+		w.WriteHeader(http.StatusUnauthorized)
+		// TODO Redirect
 		return
 	}
-	err = json.Unmarshal(data, userId)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to unmarshall body")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tasks, err := postgres.SelectAllTasks(userId.Id)
+
+	tasks, err := postgres.SelectAllTasks(id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get tasks")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -166,25 +171,17 @@ func GetAllTask(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetTask(w http.ResponseWriter, r *http.Request) {
-	type requestBody struct {
-		UserId string `json:"user_id"`
-	}
-	request := requestBody{}
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to decode body")
-		w.WriteHeader(http.StatusInternalServerError)
+func getTask(w http.ResponseWriter, r *http.Request) {
+	userId, err := auth(r)
+	if err != nil || userId == "" {
+		log.Info().Err(err).Msg("Failed to authorize user")
+		w.WriteHeader(http.StatusUnauthorized)
+		// TODO Redirect
 		return
 	}
-	err = json.Unmarshal(data, request)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to unmarshall body")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+
 	id := mux.Vars(r)["id"]
-	task, err := postgres.SelectTask(request.UserId, id)
+	task, err := postgres.SelectTask(userId, id)
 	files := []string{"./assets/html/task.gohtml"}
 	if len(files) > 0 {
 		name := path.Base(files[0])
@@ -204,8 +201,17 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func InsertTask(w http.ResponseWriter, r *http.Request) {
+func insertTask(w http.ResponseWriter, r *http.Request) {
 	task := proto.Task{}
+	var err error
+
+	task.Author, err = auth(r)
+	if err != nil || task.Author == "" {
+		log.Info().Err(err).Msg("Failed to authorize user")
+		w.WriteHeader(http.StatusUnauthorized)
+		// TODO Redirect
+		return
+	}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to decode body")
@@ -239,25 +245,16 @@ func InsertTask(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func RemoveTask(w http.ResponseWriter, r *http.Request) {
-	type requestBody struct {
-		UserId string `json:"user_id"`
-	}
-	request := requestBody{}
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to decode body")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	err = json.Unmarshal(data, request)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to unmarshall body")
-		w.WriteHeader(http.StatusInternalServerError)
+func removeTask(w http.ResponseWriter, r *http.Request) {
+	userId, err := auth(r)
+	if err != nil || userId == "" {
+		log.Info().Err(err).Msg("Failed to authorize user")
+		w.WriteHeader(http.StatusUnauthorized)
+		// TODO Redirect
 		return
 	}
 	id := mux.Vars(r)["id"]
-	err = postgres.DeleteTask(request.UserId, id)
+	err = postgres.DeleteTask(userId, id)
 	if err != nil {
 		log.Error().Err(err).Msgf("Failed to delete task %v", id)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -266,9 +263,16 @@ func RemoveTask(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
+func updateTaskStatus(w http.ResponseWriter, r *http.Request) {
+	userId, err := auth(r)
+	if err != nil || userId == "" {
+		log.Info().Err(err).Msg("Failed to authorize user")
+		w.WriteHeader(http.StatusUnauthorized)
+		// TODO Redirect
+		return
+	}
+
 	type requestBody struct {
-		UserId     string `json:"user_id"`
 		TaskId     string `json:"task_id"`
 		IsResolved bool   `json:"is_resolved"`
 	}
@@ -281,11 +285,11 @@ func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	err = json.Unmarshal(data, request)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to unmarshall body")
+		log.Error().Err(err).Msg("Failed to unmarshal body")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	err = postgres.UpdateTask(request.TaskId, request.UserId, request.IsResolved)
+	err = postgres.UpdateTask(request.TaskId, userId, request.IsResolved)
 	if err != nil {
 		w.WriteHeader(500)
 		_, _ = w.Write([]byte(fmt.Sprint("Failed to update task")))
@@ -294,8 +298,8 @@ func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func Authorize(w http.ResponseWriter, r *http.Request) {
-	user := proto.User{}
+func authorize(w http.ResponseWriter, r *http.Request) {
+	user := &proto.User{}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to decode body")
@@ -311,12 +315,18 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "id",
+		Value:   id,
+		Expires: time.Now().Add(cookieDuration),
+	})
+
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(id))
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
-	user := proto.User{}
+func register(w http.ResponseWriter, r *http.Request) {
+	user := &proto.User{}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to decode body")
@@ -332,11 +342,17 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "id",
+		Value:   id,
+		Expires: time.Now().Add(cookieDuration),
+	})
+
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(id))
 }
 
-func OptionsHandler(w http.ResponseWriter, r *http.Request) {
+func optionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Method", "GET, POST, PUT, DELETE")
 

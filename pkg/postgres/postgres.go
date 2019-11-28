@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	selectAllTasksQuery = "SELECT uuid, value, is_resolved FROM todo.public.tasks WHERE author_uuid = $1"
-	selectTaskQuery     = "SELECT value, is_resolved FROM todo.public.tasks WHERE author_uuid = $1 AND uuid = $2"
-	insertTaskQuery     = "INSERT INTO todo.public.tasks(uuid, value, author_uuid, is_resolved) VALUES ($1, $2, $3, $4)"
-	updateTaskQuery     = "UPDATE todo.public.tasks SET is_resolved = $3 WHERE uuid = $1 AND author_uuid = $2"
-	deleteTaskQuery     = "DELETE FROM todo.public.tasks WHERE uuid = $1 AND uuid = $2"
-	selectUserQuery     = "SELECT uuid, password, salt FROM todo.public.users WHERE login = $1"
-	insertUserQuery     = "INSERT INTO todo.public.users(uuid, login, password, salt) VALUES ($1, $2, $3, $4)"
+	selectAllTasksQuery = "SELECT uuid, value, is_resolved FROM public.tasks WHERE author_uuid = $1"
+	selectTaskQuery     = "SELECT value, is_resolved FROM public.tasks WHERE author_uuid = $1 AND uuid = $2"
+	insertTaskQuery     = "INSERT INTO public.tasks(uuid, value, author_uuid, is_resolved) VALUES ($1, $2, $3, $4)"
+	updateTaskQuery     = "UPDATE public.tasks SET is_resolved = $3 WHERE uuid = $1 AND author_uuid = $2"
+	deleteTaskQuery     = "DELETE FROM public.tasks WHERE uuid = $1 AND uuid = $2"
+	selectUserQuery     = "SELECT uuid, password, salt FROM public.users WHERE login = $1"
+	insertUserQuery     = "INSERT INTO public.users(uuid, login, password, salt) VALUES ($1, $2, $3, $4)"
 )
 
 var db *sql.DB
@@ -120,7 +120,7 @@ func InsertTask(author string, value string, isResolved bool) (err error) {
 			log.Error().Err(err).Msgf("Could not close database connection")
 		}
 	}()
-	id, err := uuid.NewV4()
+	id := uuid.NewV4()
 	if err != nil {
 		return fmt.Errorf("could not generate uuid: %v", err)
 	}
@@ -184,11 +184,11 @@ func SignUp(login string, password string) (string, error) {
 			log.Error().Err(err).Msgf("Could not close database connection:")
 		}
 	}()
-	id, err := uuid.NewV4()
+	id := uuid.NewV4()
 	if err != nil {
 		return "", fmt.Errorf("could not generate uuid: %v", err)
 	}
-	salt, err := uuid.NewV4()
+	salt := uuid.NewV4()
 	if err != nil {
 		return "", fmt.Errorf("could not generate salt: %v", err)
 	}

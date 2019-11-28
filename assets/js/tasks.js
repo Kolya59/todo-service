@@ -16,7 +16,6 @@ async function insertTaskRequest(content) {
     {
         method: 'POST',
         body: JSON.stringify({
-            author: localStorage.getItem('uuid'),
             value: content,
             is_resolved: false
         })
@@ -43,12 +42,7 @@ function insertTask() {
 async function viewTaskRequest(id) {
     let resp = await fetch(
         `http://127.0.0.1:4201/tasks/${id}`,
-        {
-            method: 'GET',
-            headers: JSON.stringify({
-                Authorization: localStorage.getItem('uuid'),
-            })
-        });
+        { method: 'GET' });
     if (resp.ok) {
         return await resp.text();
     } else {
@@ -69,10 +63,7 @@ async function removeTaskRequest(id) {
     let resp = await fetch(
     `http://127.0.0.1:4201/tasks/${id}`,
     {
-        method: 'DELETE',
-        headers: JSON.stringify({
-            Authorization: localStorage.getItem('uuid'),
-        })
+        method: 'DELETE'
     });
     if (resp.ok) {
         $('.tasks-ul').remove(`#task${id}`)

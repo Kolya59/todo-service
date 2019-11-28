@@ -1,5 +1,19 @@
 'use strict';
 
+function handle() {
+    let form = $('.auth-form').serializeArray();
+    switch (form[2].value) {
+        case 'signin':
+            signIn(form);
+            break;
+        case 'signup':
+            signUp(form);
+            break;
+        default:
+            return;
+    }
+}
+
 async function signInRequest(login, password) {
     let resp = await fetch (
         `http://127.0.0.1:4201/auth/signin`,
@@ -11,18 +25,14 @@ async function signInRequest(login, password) {
             }),
             credentials: 'same-origin'
         });
-    if (resp.ok) {
-        let uuid = await resp.text();
-        localStorage.setItem('uuid', uuid);
-    } else {
+    if (!resp.ok) {
         throw `Failed to sign in ${resp.status} ${resp.statusText}`;
     }
 }
 
-function signIn() {
-    let form = $('.auth-form').serialize();
-    let login = form.login;
-    let password = form.password;
+function signIn(form) {
+    let login = form[0].value;
+    let password = form[1].value;
     signInRequest(login, password)
         // TODO Put uuid into redirect body
         .then(() => window.location.href = "http://127.0.0.1:4201/tasks")
@@ -39,18 +49,14 @@ async function signUpRequest(login, password) {
                 password: password
             })
         });
-    if (resp.ok) {
-        let uuid = await resp.text();
-        localStorage.setItem('uuid', uuid);
-    } else {
+    if (!resp.ok) {
         throw `Failed to sign up ${resp.status} ${resp.statusText}`;
     }
 }
 
-function signUp() {
-    let form = $('.auth-form').serialize();
-    let login = form.login;
-    let password = form.password;
+function signUp(form) {
+    let login = form[0].value;
+    let password = form[1].value;
     signUpRequest(login, password)
         // TODO Put uuid into redirect body
         .then(() => window.location.href = "http://127.0.0.1:4201/tasks")
@@ -59,16 +65,14 @@ function signUp() {
 
 // Handlers
 $('.auth-form').submit(e => {
-    alert('Submit 1');
+    handle();
     e.preventDefault();
 });
-$('.auth-form-sign-in').submit(e => {
-    alert('Submit 2');
-    signIn();
-    e.preventDefault();
+$('.auth-form-sign-in').click(e => {
+    $('#hidden').val('signin');
+    $('.auth-form').submit();
 });
-$('.auth-form-sign-up').submit(e => {
-    alert('Submit 3');
-    signUp();
-    e.preventDefault();
+$('.auth-form-sign-up').click(e => {
+    $('#hidden').val('signup');
+    $('.auth-form').submit();
 });

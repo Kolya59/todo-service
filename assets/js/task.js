@@ -6,7 +6,6 @@ async function changeStatusRequest(id, new_value) {
     {
         method: 'PUT',
         body: JSON.stringify({
-            uuid: id,
             is_resolved: new_value
         })
     });
