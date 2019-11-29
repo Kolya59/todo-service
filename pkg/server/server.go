@@ -26,6 +26,11 @@ const (
 	cookieDuration = 30 * time.Minute
 )
 
+var (
+	tasksUrl string
+	loginUrl string
+)
+
 func StartServer(host string, port string, profilerPort string) {
 	// Create router
 	r := chi.NewRouter()
@@ -104,6 +109,9 @@ func StartServer(host string, port string, profilerPort string) {
 		}
 	}()
 
+	loginUrl = fmt.Sprintf("%v:%v/auth", host, port)
+	tasksUrl = fmt.Sprintf("%v:%v/tasks", host, port)
+
 	// Listen requests
 	go func() {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
@@ -139,8 +147,7 @@ func getAllTask(w http.ResponseWriter, r *http.Request) {
 	id, err := auth(r)
 	if err != nil || id == "" {
 		log.Info().Err(err).Msg("Failed to authorize user")
-		w.WriteHeader(http.StatusUnauthorized)
-		// TODO Redirect
+		http.Redirect(w, r, loginUrl, http.StatusUnauthorized)
 		return
 	}
 
@@ -175,8 +182,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	userId, err := auth(r)
 	if err != nil || userId == "" {
 		log.Info().Err(err).Msg("Failed to authorize user")
-		w.WriteHeader(http.StatusUnauthorized)
-		// TODO Redirect
+		http.Redirect(w, r, loginUrl, http.StatusUnauthorized)
 		return
 	}
 
@@ -202,14 +208,13 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func insertTask(w http.ResponseWriter, r *http.Request) {
-	task := proto.Task{}
+	task := &proto.Task{}
 	var err error
 
 	task.Author, err = auth(r)
 	if err != nil || task.Author == "" {
 		log.Info().Err(err).Msg("Failed to authorize user")
-		w.WriteHeader(http.StatusUnauthorized)
-		// TODO Redirect
+		http.Redirect(w, r, loginUrl, http.StatusUnauthorized)
 		return
 	}
 	data, err := ioutil.ReadAll(r.Body)
@@ -224,18 +229,19 @@ func insertTask(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	err = postgres.InsertTask(task.Author, task.Value, task.IsResolved)
+	res, err := postgres.InsertTask(task.Value, task.Author, false)
 	if err != nil {
 		w.WriteHeader(500)
 		_, _ = w.Write([]byte(fmt.Sprint("Failed to insert task")))
 		return
 	}
-	response, err := json.Marshal(task)
+	response, err := json.Marshal(res)
 	if err != nil {
 		w.WriteHeader(500)
 		_, _ = w.Write([]byte(fmt.Sprint("Failed to insert task")))
 		return
 	}
+	log.Info().Msgf("Msg: %v", res)
 	_, err = w.Write(response)
 	w.WriteHeader(200)
 	if err != nil {
@@ -249,8 +255,7 @@ func removeTask(w http.ResponseWriter, r *http.Request) {
 	userId, err := auth(r)
 	if err != nil || userId == "" {
 		log.Info().Err(err).Msg("Failed to authorize user")
-		w.WriteHeader(http.StatusUnauthorized)
-		// TODO Redirect
+		http.Redirect(w, r, loginUrl, http.StatusUnauthorized)
 		return
 	}
 	id := mux.Vars(r)["id"]
@@ -267,8 +272,7 @@ func updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 	userId, err := auth(r)
 	if err != nil || userId == "" {
 		log.Info().Err(err).Msg("Failed to authorize user")
-		w.WriteHeader(http.StatusUnauthorized)
-		// TODO Redirect
+		http.Redirect(w, r, loginUrl, http.StatusUnauthorized)
 		return
 	}
 
@@ -276,7 +280,7 @@ func updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 		TaskId     string `json:"task_id"`
 		IsResolved bool   `json:"is_resolved"`
 	}
-	request := requestBody{}
+	request := &requestBody{}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to decode body")
@@ -317,12 +321,15 @@ func authorize(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    "id",
-		Value:   id,
-		Expires: time.Now().Add(cookieDuration),
+		Name:     "id",
+		Value:    id,
+		Expires:  time.Now().Add(cookieDuration),
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
 	})
 
-	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, tasksUrl, http.StatusOK)
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
@@ -339,17 +346,24 @@ func register(w http.ResponseWriter, r *http.Request) {
 	id, err := postgres.SignUp(user.Login, user.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to sign up")
-		w.WriteHeader(http.StatusForbidden)
+		if err.Error() == "user is exist" {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    "id",
-		Value:   id,
-		Expires: time.Now().Add(cookieDuration),
+		Name:     "id",
+		Value:    id,
+		Expires:  time.Now().Add(cookieDuration),
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
 	})
 
-	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, tasksUrl, http.StatusOK)
 }
 
 func optionsHandler(w http.ResponseWriter, r *http.Request) {

@@ -4,12 +4,12 @@ create table users
         constraint users_pk
             primary key,
     login    text not null,
-    password text not null,
-    salt     text not null
+    password bytea not null,
+    salt     bytea not null
 );
 
 alter table users
-    owner to kolya59;
+    owner to postgres;
 
 create unique index users_login_uindex
     on users (login);
@@ -28,7 +28,7 @@ create table tasks
 );
 
 alter table tasks
-    owner to kolya59;
+    owner to postgres;
 
 create unique index tasks_uuid_uindex
     on tasks (uuid);

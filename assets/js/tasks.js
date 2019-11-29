@@ -2,8 +2,8 @@
 
 function createTaskContainer(task) {
     $('.tasks-ul').prepend(`
-        <li class="task" id="task_${task.id}">
-            <p class="task-content">${task.content}</p>
+        <li class="task" id="task_${task.uuid}">
+            <p class="task-content">${task.value}</p>
             <button class="task-view-button">View</button>
             <button class="task-remove-button">Remove</button>
         </li>
@@ -28,11 +28,12 @@ async function insertTaskRequest(content) {
 }
 
 function insertTask() {
-    let form = $('#tasks-add-form').serialize();
-    let content = form.task_content;
+    let form = $('#tasks-add-form').serializeArray();
+    let content = form[0].value;
     insertTaskRequest(content)
         .then((task) => {
-            createTaskContainer(task)
+            createTaskContainer(task);
+            $('#placeholder').remove();
         })
         .catch((err) => {
             console.error(`Failed to insert task`, err)
@@ -82,14 +83,14 @@ function removeTask(id) {
 
 // Handlers
 $('.tasks-add-form').on('submit', e => {
-    e.preventDefault();
     insertTask();
+    e.preventDefault();
 });
 $('.task-view-button').on('click', e => {
-    e.preventDefault();
     viewTask(e.target.parentElement.id.slice(5));
+    e.preventDefault();
 });
 $('.task-remove-button').on('click', e => {
-    e.preventDefault();
     removeTask(e.target.parentElement.id.slice(5));
+    e.preventDefault();
 });
