@@ -1,5 +1,9 @@
 'use strict';
 
+// TODO Doesn't work removing container
+// TODO Tasks created with similar id
+// TODO Error handling
+
 function createTaskContainer(task) {
     $('.tasks-ul').prepend(`
         <li class="task" id="task_${task.uuid}">
@@ -8,6 +12,14 @@ function createTaskContainer(task) {
             <button class="task-remove-button">Remove</button>
         </li>
     `);
+    $('.task-view-button').on('click', e => {
+        viewTask(e.target.parentElement.id.slice(5));
+        e.preventDefault();
+    });
+    $('.task-remove-button').on('click', e => {
+        removeTask(e.target.parentElement.id.slice(5));
+        e.preventDefault();
+    });
 }
 
 async function insertTaskRequest(content) {
@@ -54,7 +66,6 @@ async function viewTaskRequest(id) {
 function viewTask(id) {
     viewTaskRequest()
         .then(result => {
-            // TODO Refactor
             document.location.href = `http://127.0.0.1:4201/tasks/${id}`
         })
         .catch(err => console.error(`Failed to view task with id: ${id}`, err));
@@ -66,9 +77,7 @@ async function removeTaskRequest(id) {
     {
         method: 'DELETE'
     });
-    if (resp.ok) {
-        $('.tasks-ul').remove(`#task${id}`)
-    } else {
+    if (!resp.ok) {
         throw `Failed to remove task ${resp.status} ${resp.statusText}`
     }
 }
@@ -76,7 +85,7 @@ async function removeTaskRequest(id) {
 function removeTask(id) {
     removeTaskRequest(id)
         .then(() => {
-            $('.tasks-ul').remove(`#task_${id}`);
+            $(`#task_${id}`).remove();
         })
         .catch((err) => console.error(`Failed to remove task with id: ${id}`, err));
 }

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
-	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 
@@ -186,7 +185,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := mux.Vars(r)["id"]
+	id := chi.URLParam(r, "id")
 	task, err := postgres.SelectTask(userId, id)
 	files := []string{"./assets/html/task.gohtml"}
 	if len(files) > 0 {
@@ -241,7 +240,6 @@ func insertTask(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(fmt.Sprint("Failed to insert task")))
 		return
 	}
-	log.Info().Msgf("Msg: %v", res)
 	_, err = w.Write(response)
 	w.WriteHeader(200)
 	if err != nil {
@@ -258,7 +256,7 @@ func removeTask(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, loginUrl, http.StatusUnauthorized)
 		return
 	}
-	id := mux.Vars(r)["id"]
+	id := chi.URLParam(r, "id")
 	err = postgres.DeleteTask(userId, id)
 	if err != nil {
 		log.Error().Err(err).Msgf("Failed to delete task %v", id)

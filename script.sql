@@ -9,7 +9,7 @@ create table users
 );
 
 alter table users
-    owner to postgres;
+    owner to kolya59;
 
 create unique index users_login_uindex
     on users (login);
@@ -28,7 +28,7 @@ create table tasks
 );
 
 alter table tasks
-    owner to postgres;
+    owner to kolya59;
 
 create unique index tasks_uuid_uindex
     on tasks (uuid);

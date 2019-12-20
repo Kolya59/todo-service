@@ -10,10 +10,11 @@
     <div class="task-name">
         <h1>Task ID is {{ .UUID }}</h1>
     </div>
-    <div class="task-value">
+    <form id="form" class="task-value">
         <p>{{ .Value }}</p>
-        <input id="{{ .UUID }}" class="is_resolved" type="checkbox" checked="{{ .IsResolved }}">
-    </div>
+        <input hidden name="id" type="hidden">
+        <input class="is_resolved" name="is_resolved" type="checkbox" checked="{{ .IsResolved }}">
+    </form>
     <div class="task-comments">
         <ul class="ul-task-comments">
             {{range .Comments}}

@@ -34,14 +34,6 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:cbec35fe4d5a4fba369a656a8cd65e244ea2c743007d8f6c1ccb132acf9d1296"
-  name = "github.com/gorilla/mux"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15"
-  version = "v1.7.3"
-
-[[projects]]
   digest = "1:a2cff208d4759f6ba1b1cd228587b0a1869f95f22542ec9cd17fff64430113c7"
   name = "github.com/jessevdk/go-flags"
   packages = ["."]
@@ -136,6 +128,17 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:9d5b5d543996dd584da1db1e0de1926f3e4c3a8dba0fa2f8db70f3ebee2342e0"
+  name = "golang.org/x/crypto"
+  packages = [
+    "bcrypt",
+    "blowfish",
+  ]
+  pruneopts = "UT"
+  revision = "becbf705a91575484002d598f87d74f0002801e7"
+
+[[projects]]
+  branch = "master"
   digest = "1:68fe4216878f16dd6ef33413365fbbe8d2eb781177c7adab874cfc752ce96a7e"
   name = "golang.org/x/sys"
   packages = ["windows"]
@@ -148,13 +151,13 @@
   input-imports = [
     "github.com/go-chi/chi",
     "github.com/google/uuid",
-    "github.com/gorilla/mux",
     "github.com/jessevdk/go-flags",
     "github.com/lib/pq",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",
     "github.com/satori/go.uuid",
+    "golang.org/x/crypto/bcrypt",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

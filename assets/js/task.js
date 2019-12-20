@@ -10,7 +10,7 @@ async function changeStatusRequest(id, new_value) {
         })
     });
     if (resp.ok) {
-        return;
+        $(`#${id}`).checked = new_value;
     } else {
         throw `Failed to switch status ${resp.status} ${resp.statusText}`;
     }
@@ -28,7 +28,8 @@ function changeStatus(id, old_value) {
         })
 }
 
-$('.is_resolved').on('click', e => {
+$('#form').on('submit', e => {
+    let form = $('#form').serializeArray();
+    changeStatus(form[0].value, form[1].value);
     e.preventDefault();
-    changeStatus(e.target.id, e.target.checked());
 });

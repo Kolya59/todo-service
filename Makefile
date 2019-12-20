@@ -2,9 +2,9 @@ SERVER_HOST ?= 127.0.0.1
 SERVER_PORT ?= 4201
 DB_HOST ?= 127.0.0.1
 DB_PORT ?= 5432
-DB_USER ?= postgres
+DB_USER ?= kolya59
 DB_PASSWORD ?= 12334566w
-DB_NAME ?= postgres
+DB_NAME ?= todo
 PROF_PORT ?= 2222
 LOG_LEVEL ?= debug
 

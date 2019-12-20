@@ -5,13 +5,13 @@ import (
 	"errors"
 	"fmt"
 
-	uuid "github.com/satori/go.uuid"
-
-	"github.com/psu/todo-service/pkg/crypt"
-	"github.com/psu/todo-service/proto"
-
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
+	uuid "github.com/satori/go.uuid"
+
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/psu/todo-service/proto"
 )
 
 const (
@@ -198,7 +198,7 @@ func UpdateTask(taskId string, authorId string, isResolved bool) (err error) {
 }
 
 // Delete task from database
-func DeleteTask(taskId string, userId string) (err error) {
+func DeleteTask(userId string, taskId string) (err error) {
 	deleteTask, err := db.Prepare(deleteTaskQuery)
 	if err != nil {
 		return fmt.Errorf("could not prepare delete query: %v", err)
@@ -237,7 +237,11 @@ func SignUp(login string, password string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not generate salt: %v", err)
 	}
-	hashedPassword := crypt.Encrypt([]byte(password), salt.String())
+	pass := make([]byte, 32, 32)
+	for i := 0; i < len(password) && i < 32; i++ {
+		pass[i] = password[i]
+	}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 
 	_, err = insertUser.Exec(id, login, hashedPassword, salt)
 	if err != nil {
@@ -246,7 +250,7 @@ func SignUp(login string, password string) (string, error) {
 		}
 		return "", fmt.Errorf("could not insert user into database: %v", err)
 	}
-	log.Info().Msgf("Task with uuid = %s is added in database", id)
+	log.Info().Msgf("User with uuid = %s is added in database", id)
 	return id.String(), nil
 }
 
@@ -281,8 +285,8 @@ func SignIn(login string, password string) (string, error) {
 	}
 
 	// Check password
-	pass := crypt.Decrypt([]byte(password), user.Salt)
-	if string(pass) != user.Password {
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
 		return "", errors.New("invalid password")
 	}
 
