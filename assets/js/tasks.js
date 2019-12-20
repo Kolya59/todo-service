@@ -1,7 +1,5 @@
 'use strict';
 
-// TODO Doesn't work removing container
-// TODO Tasks created with similar id
 // TODO Error handling
 
 function createTaskContainer(task) {

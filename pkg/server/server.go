@@ -275,8 +275,7 @@ func updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type requestBody struct {
-		TaskId     string `json:"task_id"`
-		IsResolved bool   `json:"is_resolved"`
+		IsResolved bool `json:"is_resolved"`
 	}
 	request := &requestBody{}
 	data, err := ioutil.ReadAll(r.Body)
@@ -291,7 +290,8 @@ func updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	err = postgres.UpdateTask(request.TaskId, userId, request.IsResolved)
+	id := chi.URLParam(r, "id")
+	err = postgres.UpdateTask(id, userId, request.IsResolved)
 	if err != nil {
 		w.WriteHeader(500)
 		_, _ = w.Write([]byte(fmt.Sprint("Failed to update task")))

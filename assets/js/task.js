@@ -16,20 +16,25 @@ async function changeStatusRequest(id, new_value) {
     }
 }
 
-function changeStatus(id, old_value) {
-    let new_value = !old_value;
-    changeStatusRequest(id, new_value)
+function changeStatus(id, oldValue) {
+    let newValue = !oldValue;
+    changeStatusRequest(id, oldValue)
         .then(() => {
-            $('.is_resolved').replaceWith(`<input type="checkbox" checked="${new_value}">`);
+            $('.is_resolved').attr('checked', `${newValue}`);
         })
         .catch((e) => {
             alert(`Failed to switch task status ${e}`);
-            $('.is_resolved').replaceWith(`<input type="checkbox" checked="${old_value}">`);
+            $('.is_resolved').attr('checked', `${oldValue}`);
         })
 }
 
+$('.is_resolved').on('click', e => {
+   $('#form').submit();
+});
+
 $('#form').on('submit', e => {
     let form = $('#form').serializeArray();
-    changeStatus(form[0].value, form[1].value);
+    let old_value = form[1] ? form[1].value === 'on' : false;
+    changeStatus(form[0].value, old_value);
     e.preventDefault();
 });

@@ -193,7 +193,7 @@ func UpdateTask(taskId string, authorId string, isResolved bool) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not update task in database: %v", err)
 	}
-	log.Info().Msgf("Task with uuid = %s is updated in database", taskId)
+	log.Info().Msgf("Task with uuid = %s is updated in database with value %v", taskId, isResolved)
 	return nil
 }
 

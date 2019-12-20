@@ -7,13 +7,14 @@
     <link href="/task.css" rel="stylesheet">
 </head>
 <body>
+    <a href="/tasks">Tasks</a>
     <div class="task-name">
         <h1>Task ID is {{ .UUID }}</h1>
     </div>
     <form id="form" class="task-value">
         <p>{{ .Value }}</p>
-        <input hidden name="id" type="hidden">
-        <input class="is_resolved" name="is_resolved" type="checkbox" checked="{{ .IsResolved }}">
+        <input hidden name="id" type="hidden" value="{{ .UUID }}">
+        <input class="is_resolved" name="is_resolved" type="checkbox" {{ if .IsResolved }} checked {{ end }}>
     </form>
     <div class="task-comments">
         <ul class="ul-task-comments">
