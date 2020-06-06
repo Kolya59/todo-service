@@ -1,4 +1,4 @@
-package proto
+package models
 
 import (
 	"math/rand"

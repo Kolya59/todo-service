@@ -1,4 +1,4 @@
-package proto
+package models
 
 type Task struct {
 	UUID       string    `json:"uuid"`

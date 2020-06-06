@@ -4,10 +4,11 @@ import (
 	"os"
 
 	"github.com/jessevdk/go-flags"
-	"github.com/psu/todo-service/pkg/postgres"
-	"github.com/psu/todo-service/pkg/server"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/Kolya59/todo-service/pkg/postgres"
+	"github.com/Kolya59/todo-service/pkg/server"
 )
 
 var opts struct {

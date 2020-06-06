@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/psu/todo-service/proto"
+	"github.com/kolya59/todo-service/models"
 )
 
 const (
@@ -71,7 +71,7 @@ func SelectLoginByUUID(uuid string) (login string, err error) {
 }
 
 // Select all tasks from database
-func SelectAllTasks(userUUID string) (tasks []proto.Task, err error) {
+func SelectAllTasks(userUUID string) (tasks []models.Task, err error) {
 	// Initialize
 	selectAllTask, err := db.Prepare(selectAllTasksQuery)
 	if err != nil {
@@ -88,7 +88,7 @@ func SelectAllTasks(userUUID string) (tasks []proto.Task, err error) {
 		return nil, fmt.Errorf("could not get login: %v", err)
 	}
 
-	task := proto.Task{Author: login}
+	task := models.Task{Author: login}
 	// Execute query
 	rows, err := selectAllTask.Query(userUUID)
 	if err != nil {
@@ -107,11 +107,11 @@ func SelectAllTasks(userUUID string) (tasks []proto.Task, err error) {
 }
 
 // Select task
-func SelectTask(userUUID string, taskUUID string) (task proto.Task, err error) {
+func SelectTask(userUUID string, taskUUID string) (task models.Task, err error) {
 	// Initialize
 	selectTask, err := db.Prepare(selectTaskQuery)
 	if err != nil {
-		return proto.Task{}, fmt.Errorf("could not prepare select task query: %v", err)
+		return models.Task{}, fmt.Errorf("could not prepare select task query: %v", err)
 	}
 	defer func() {
 		err = selectTask.Close()
@@ -122,7 +122,7 @@ func SelectTask(userUUID string, taskUUID string) (task proto.Task, err error) {
 
 	login, err := SelectLoginByUUID(userUUID)
 	if err != nil {
-		return proto.Task{}, fmt.Errorf("could not get login: %v", err)
+		return models.Task{}, fmt.Errorf("could not get login: %v", err)
 	}
 
 	task.UUID = taskUUID
@@ -135,18 +135,18 @@ func SelectTask(userUUID string, taskUUID string) (task proto.Task, err error) {
 	)
 
 	if err != nil {
-		return proto.Task{}, fmt.Errorf("could not select task: %v", err)
+		return models.Task{}, fmt.Errorf("could not select task: %v", err)
 	}
-	task.Comments = proto.GenerateComments(task.UUID)
+	task.Comments = models.GenerateComments(task.UUID)
 
 	return task, nil
 }
 
 // Insert new task into database
-func InsertTask(value string, author string, isResolved bool) (task proto.Task, err error) {
+func InsertTask(value string, author string, isResolved bool) (task models.Task, err error) {
 	insertTask, err := db.Prepare(insertTaskQuery)
 	if err != nil {
-		return proto.Task{}, fmt.Errorf("could not prepare insert query: %v", err)
+		return models.Task{}, fmt.Errorf("could not prepare insert query: %v", err)
 	}
 	defer func() {
 		err = insertTask.Close()
@@ -156,18 +156,18 @@ func InsertTask(value string, author string, isResolved bool) (task proto.Task, 
 	}()
 	id := uuid.NewV4()
 	if err != nil {
-		return proto.Task{}, fmt.Errorf("could not generate uuid: %v", err)
+		return models.Task{}, fmt.Errorf("could not generate uuid: %v", err)
 	}
 	login, err := SelectLoginByUUID(author)
 	if err != nil {
-		return proto.Task{}, fmt.Errorf("could not get login: %v", err)
+		return models.Task{}, fmt.Errorf("could not get login: %v", err)
 	}
 	_, err = insertTask.Exec(id.String(), value, author, isResolved)
 	if err != nil {
-		return proto.Task{}, fmt.Errorf("could not insert task into database: %v", err)
+		return models.Task{}, fmt.Errorf("could not insert task into database: %v", err)
 	}
 	log.Info().Msgf("Task with uuid = %s is added in database", id)
-	return proto.Task{
+	return models.Task{
 		UUID:       id.String(),
 		Author:     login,
 		Value:      value,
@@ -267,7 +267,7 @@ func SignIn(login string, password string) (string, error) {
 			log.Error().Msgf("Could not close database connection: %v", err)
 		}
 	}()
-	user := proto.User{
+	user := models.User{
 		Login: login,
 	}
 	// Execute query

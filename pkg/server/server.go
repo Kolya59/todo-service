@@ -17,8 +17,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 
-	"github.com/psu/todo-service/pkg/postgres"
-	"github.com/psu/todo-service/proto"
+	"github.com/Kolya59/todo-service/models"
+	"github.com/Kolya59/todo-service/pkg/postgres"
 )
 
 const (
@@ -207,7 +207,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func insertTask(w http.ResponseWriter, r *http.Request) {
-	task := &proto.Task{}
+	task := &models.Task{}
 	var err error
 
 	task.Author, err = auth(r)
@@ -301,7 +301,7 @@ func updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func authorize(w http.ResponseWriter, r *http.Request) {
-	user := &proto.User{}
+	user := &models.User{}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to decode body")
@@ -331,7 +331,7 @@ func authorize(w http.ResponseWriter, r *http.Request) {
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
-	user := &proto.User{}
+	user := &models.User{}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to decode body")

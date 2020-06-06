@@ -1,4 +1,4 @@
-package proto
+package models
 
 type User struct {
 	UUID     string `json:"uuid"`
